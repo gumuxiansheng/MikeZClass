@@ -1,4 +1,5 @@
 QT       += core gui
+QT       += core network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -16,19 +17,28 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    conf/configuration.cpp \
     main.cpp \
     mainwindow.cpp \
-    refresher.cpp \
-    screenshareform.cpp
+    rpc/screenshareclient.cpp \
+    rpc/screenshareserver.cpp \
+    screenshareform.cpp \
+    sharerefresher.cpp \
+    shareviewform.cpp
 
 HEADERS += \
+    conf/configuration.h \
     mainwindow.h \
-    refresher.h \
-    screenshareform.h
+    rpc/screenshareclient.h \
+    rpc/screenshareserver.h \
+    screenshareform.h \
+    sharerefresher.h \
+    shareviewform.h
 
 FORMS += \
     mainwindow.ui \
-    screenshareform.ui
+    screenshareform.ui \
+    shareviewform.ui
 
 TRANSLATIONS += \
     MikeZClass_zh_CN.ts

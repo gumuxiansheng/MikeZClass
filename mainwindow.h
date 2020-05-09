@@ -14,6 +14,12 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+    void startMeeting();
+    void joinMeeting();
+
+public slots:
+    void clickStartMeetingBtn();
+    void clickJoinMeetingBtn();
 
 private:
     Ui::MainWindow *ui;
