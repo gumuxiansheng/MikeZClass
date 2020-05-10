@@ -26,7 +26,7 @@ private:
     QHash<QString, QTcpSocket*>::iterator clientI;
     QMutex mutex;
     QBuffer buffer;
-    bool sendingImage;
+    bool sendingImage = false;
 
 signals:
 

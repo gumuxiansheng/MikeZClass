@@ -75,7 +75,7 @@ void ScreenShareServer::sendScreenImage(QPixmap pixmap)
     block.append(buffer.data());
     for (clientI = clientsList.begin(); clientI != clientsList.end(); ++clientI)
     {
-//        qDebug("datalen send:%d",(quint32)buffer.data().size());
+        qDebug("datalen send:%d",(quint32)buffer.data().size());
         clientI.value()->write(block);
     }
     buffer.close();
