@@ -33,6 +33,7 @@ void ScreenShareServer::newConnection()
     QTcpSocket *socket = server->nextPendingConnection();
     connect(socket, SIGNAL(readyRead()), this, SLOT(readData()));
     connect(socket, SIGNAL(disconnected()), this, SLOT(connectionclosed()));
+    socket->setReadBufferSize(0);
 
     QString msg = "connected to the server";
     socket->write(msg.toLocal8Bit().constData());
