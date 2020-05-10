@@ -84,6 +84,7 @@ void ScreenShareServer::sendScreenImage(QPixmap pixmap)
     for (clientI = clientsList.begin(); clientI != clientsList.end(); ++clientI)
     {
         qint64 write_len = clientI.value()->write(block);
+        clientI.value()->flush();
         qDebug("datalen send expect: %d, actual: %d",block.size(), write_len);
 
     }
