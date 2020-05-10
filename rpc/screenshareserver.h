@@ -24,6 +24,7 @@ private:
     QTcpServer *server;
     QHash<QString, QTcpSocket*> clientsList;
     QHash<QString, QTcpSocket*>::iterator clientI;
+//    QHash<QString, bool> clientWriteBlock;
     QMutex mutex;
     QBuffer buffer;
     bool sendingImage = false;

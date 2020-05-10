@@ -33,6 +33,10 @@ public slots:
         timer->start();
         return;
     }
+    void quit()
+    {
+        timer->stop();
+    }
 
 signals:
     void uiChanged();

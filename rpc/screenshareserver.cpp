@@ -18,7 +18,14 @@ ScreenShareServer::~ScreenShareServer()
 
 void ScreenShareServer::close()
 {
+    mutex.lock();
+    for (clientI = clientsList.begin(); clientI != clientsList.end(); ++clientI)
+    {
+        clientI.value()->close();
+
+    }
     server->close();
+    mutex.unlock();
 }
 
 void ScreenShareServer::newConnection()
@@ -75,8 +82,9 @@ void ScreenShareServer::sendScreenImage(QPixmap pixmap)
     block.append(buffer.data());
     for (clientI = clientsList.begin(); clientI != clientsList.end(); ++clientI)
     {
-        qDebug("datalen send:%d",(quint32)buffer.data().size());
-        clientI.value()->write(block);
+        qint64 write_len = clientI.value()->write(block);
+        qDebug("datalen send expect: %d, actual: %d",block.size(), write_len);
+
     }
     buffer.close();
 //    qDebug() << "Encode time:"  << time.elapsed();
