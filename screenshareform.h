@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QThread>
 #include "rpc/screenshareserver.h"
+#include "sharerefresher.h"
 
 namespace Ui {
 class ScreenShareForm;
@@ -25,6 +26,7 @@ public:
 private:
     Ui::ScreenShareForm *ui;
     ScreenShareServer *server;
+    ShareRefresher *worker;
 
     void startShareServer();
     void startShareScreen();
@@ -34,6 +36,7 @@ public slots:
 
 signals:
     void operate();
+    void closed();
 };
 
 #endif // SCREENSHAREFORM_H

@@ -5,7 +5,6 @@
 #include <QMessageBox>
 #include <QThread>
 #include <QPainter>
-#include <sharerefresher.h>
 
 ScreenShareForm::ScreenShareForm(QWidget *parent) :
     QWidget(parent),
@@ -37,6 +36,7 @@ void ScreenShareForm::updateUi()
 void ScreenShareForm::closeEvent(QCloseEvent *)
 {
     server->close();
+    emit closed();
 }
 
 void ScreenShareForm::paintEvent(QPaintEvent *)
@@ -61,11 +61,12 @@ void ScreenShareForm::startShareScreen()
 {
     screen = QGuiApplication::primaryScreen();
 
-    ShareRefresher *worker = new ShareRefresher;
+    worker = new ShareRefresher;
     worker->moveToThread(&workerThread);
     connect(&workerThread, &QThread::finished, worker, &QObject::deleteLater);
     connect(this, &ScreenShareForm::operate, worker, &ShareRefresher::shareScreen);
     connect(worker, &ShareRefresher::uiChanged, this, &ScreenShareForm::updateUi);
+    connect(this, &ScreenShareForm::closed, worker, &ShareRefresher::quit);
     workerThread.start();
     emit operate();
 }
