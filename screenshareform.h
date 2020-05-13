@@ -25,10 +25,8 @@ public:
 
 private:
     Ui::ScreenShareForm *ui;
-    ScreenShareServer *server;
     ShareRefresher *worker;
 
-    void startShareServer();
     void startShareScreen();
 
 public slots:
@@ -37,6 +35,7 @@ public slots:
 signals:
     void operate();
     void closed();
+    void screenPrepared(QPixmap pixmap);
 };
 
 #endif // SCREENSHAREFORM_H

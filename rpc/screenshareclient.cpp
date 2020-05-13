@@ -8,6 +8,7 @@ ScreenShareClient::ScreenShareClient(QObject *parent) : QObject(parent)
     socket = new QTcpSocket();
     connect(socket, SIGNAL(readyRead()), this, SLOT(readData()));
     socket->setReadBufferSize(9000000);
+//    socket->connectToHost("10.211.55.3", 8910);
     socket->connectToHost("0.0.0.0", 8910);
     socket->connected();
 }

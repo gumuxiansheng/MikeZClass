@@ -12,7 +12,6 @@ ScreenShareForm::ScreenShareForm(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    startShareServer();
     startShareScreen();
 
 }
@@ -20,22 +19,16 @@ ScreenShareForm::ScreenShareForm(QWidget *parent) :
 ScreenShareForm::~ScreenShareForm()
 {
     delete ui;
-    delete server;
 }
 
 void ScreenShareForm::updateUi()
 {
     pixmap = screen->grabWindow(QApplication::desktop()->winId());//截取桌面
-    if (!server->isSendingImage())
-    {
-        server->sendScreenImage(pixmap);
-    }
-
+    emit screenPrepared(pixmap);
 }
 
 void ScreenShareForm::closeEvent(QCloseEvent *)
 {
-    server->close();
     emit closed();
 }
 
@@ -47,16 +40,6 @@ void ScreenShareForm::paintEvent(QPaintEvent *)
     return;
 }
 
-void ScreenShareForm::startShareServer()
-{
-    server = new ScreenShareServer;
-    QString serverIp = server->getHostIpAddress();
-    QHostAddress hostAddr;
-    hostAddr.setAddress(serverIp);
-    server->runServer(hostAddr, 8910);
-    qDebug() << "ServerIp: " + serverIp << "; Port: 8910";
-}
-
 void ScreenShareForm::startShareScreen()
 {
     screen = QGuiApplication::primaryScreen();
@@ -64,8 +47,9 @@ void ScreenShareForm::startShareScreen()
     worker = new ShareRefresher;
     worker->moveToThread(&workerThread);
     connect(&workerThread, &QThread::finished, worker, &QObject::deleteLater);
-    connect(this, &ScreenShareForm::operate, worker, &ShareRefresher::shareScreen);
-    connect(worker, &ShareRefresher::uiChanged, this, &ScreenShareForm::updateUi);
+    connect(this, &ScreenShareForm::operate, worker, &ShareRefresher::shareScreen); // start grab screen every Interval time
+    connect(this, &ScreenShareForm::screenPrepared, worker, &ShareRefresher::sendScreenImage); // when screen image prepared, use worker thread to send screen image through rpc
+    connect(worker, &ShareRefresher::uiChanged, this, &ScreenShareForm::updateUi); // once timer reached, update the screen image
     connect(this, &ScreenShareForm::closed, worker, &ShareRefresher::quit);
     workerThread.start();
     emit operate();
