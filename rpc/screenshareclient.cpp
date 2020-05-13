@@ -9,7 +9,7 @@ ScreenShareClient::ScreenShareClient(QObject *parent) : QObject(parent)
     connect(socket, SIGNAL(readyRead()), this, SLOT(readData()));
     socket->setReadBufferSize(9000000);
 //    socket->connectToHost("10.211.55.3", 8910);
-    socket->connectToHost("0.0.0.0", 8910);
+        socket->connectToHost("0.0.0.0", 8910);
     socket->connected();
 }
 
@@ -32,34 +32,43 @@ void ScreenShareClient::readData()
     quint32 bytesLen = socket->bytesAvailable();
     quint32 readLen = 0;
     qDebug("readData: %d", bytesLen);
-    if (bytesLen < 100)
-    {
-        qDebug() << socket->readAll();
-    } else
-    { // It should be image
-        while (socket->bytesAvailable()) {
-            if(data_len == 0)
-            {
-                QDataStream in(socket);
-                in >> len;
-                qDebug() << "datalen:" << len;
-                if (bytesLen - readLen > len + 1000)
-                {
-                    socket->read(len - data_len);
-                    readLen += len - data_len;
-                    array.clear();
-                    array.squeeze();
-                    array.reserve(data_len);
-                    len = 0xffffffff;
-                    data_len = 0;
-                    continue;
-                }
-            }
-            array.append(socket->read(len - data_len));
-            readLen += len - data_len;
-            data_len = array.size();
 
-            if (data_len == len)
+    quint8 data_type = -1;
+    while (socket->bytesAvailable()) {
+        if(data_len == 0)
+        {
+            QDataStream in(socket);
+            in >> data_type;
+            in >> len;
+            qDebug("datatype: %d, datalen: %d", data_type, len);
+            if (bytesLen - readLen > len + 1000)
+            {
+                socket->read(len - data_len);
+                readLen += len - data_len;
+                array.clear();
+                array.squeeze();
+                array.reserve(data_len);
+                len = 0xffffffff;
+                data_len = 0;
+                continue;
+            }
+        }
+        array.append(socket->read(len - data_len));
+        readLen += len - data_len;
+        data_len = array.size();
+
+        if (data_len == len)
+        {
+            if (data_type == 0)
+            {
+                qDebug() << "info read";
+                qDebug() << array;
+                array.clear();
+                array.squeeze();
+                array.reserve(data_len);
+                len = 0xffffffff;
+                data_len = 0;
+            } else if (data_type == 1)
             {
                 qDebug() << "imageRead";
                 pixmap.loadFromData(array, "JPG");
@@ -70,9 +79,14 @@ void ScreenShareClient::readData()
                 data_len = 0;
                 qDebug() << "Decode time:" << time.elapsed();
                 emit imageRead(pixmap);
+            } else if (data_type == 2)
+            {
+                qDebug() << "audio read";
+
             }
         }
     }
+
 
     mutex.unlock();
 
