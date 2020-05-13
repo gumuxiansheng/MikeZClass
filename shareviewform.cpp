@@ -7,8 +7,12 @@ ShareViewForm::ShareViewForm(QWidget *parent) :
     ui(new Ui::ShareViewForm)
 {
     ui->setupUi(this);
-    client = new ScreenShareClient();
+    client = new ScreenShareClient;
+    audioShare = new AudioShare;
+    audioShare->startOutput();
+
     connect(client, &ScreenShareClient::imageRead, this, &ShareViewForm::updateView);
+    connect(client, &ScreenShareClient::audioRead, this, &ShareViewForm::playAudio);
 }
 
 ShareViewForm::~ShareViewForm()
@@ -20,6 +24,11 @@ ShareViewForm::~ShareViewForm()
 void ShareViewForm::updateView(const QPixmap &pixmap)
 {
     this->pixmap = pixmap;
+}
+
+void ShareViewForm::playAudio(const QByteArray &audio_data)
+{
+    audioShare->playAudio(audio_data);
 }
 
 void ShareViewForm::closeEvent(QCloseEvent *)

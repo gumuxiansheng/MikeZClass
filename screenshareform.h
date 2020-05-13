@@ -4,7 +4,8 @@
 #include <QWidget>
 #include <QThread>
 #include "rpc/screenshareserver.h"
-#include "sharerefresher.h"
+#include "shareworker.h"
+#include "module/screenshare.h"
 
 namespace Ui {
 class ScreenShareForm;
@@ -14,7 +15,7 @@ class ScreenShareForm : public QWidget
 {
     Q_OBJECT
     QThread workerThread;
-    QScreen *screen;
+    ScreenShare *screenShare;
     QPixmap pixmap;
 
 public:
@@ -25,17 +26,21 @@ public:
 
 private:
     Ui::ScreenShareForm *ui;
-    ShareRefresher *worker;
+    ShareWorker *worker;
 
+    void startShareServer();
     void startShareScreen();
+    void startShareAudio();
 
 public slots:
     void updateUi();
 
 signals:
-    void operate();
+    void operateScreen();
+    void operateAudio();
     void closed();
     void screenPrepared(QPixmap pixmap);
+    void audioPrepared(AudioShare::AudioData audio_data);
 };
 
 #endif // SCREENSHAREFORM_H

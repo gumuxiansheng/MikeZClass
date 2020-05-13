@@ -69,6 +69,11 @@ bool ScreenShareServer::isSendingImage()
     return sendingImage;
 }
 
+bool ScreenShareServer::isSendingAudio()
+{
+    return sendingAudio;
+}
+
 void ScreenShareServer::sendScreenImage(QPixmap pixmap)
 {
     if (clientsList.size() == 0)
@@ -83,7 +88,7 @@ void ScreenShareServer::sendScreenImage(QPixmap pixmap)
     mutex.lock();
     QByteArray block;
     QDataStream out(&block,QIODevice::WriteOnly);
-    out<<(quint8)1; // indicates image type
+    out<<(qint8)1; // indicates image type
     out<<(quint32)buffer.data().size();
     block.append(buffer.data());
     for (clientI = clientsList.begin(); clientI != clientsList.end(); ++clientI)
@@ -97,6 +102,33 @@ void ScreenShareServer::sendScreenImage(QPixmap pixmap)
     mutex.unlock();
     buffer.close();
     sendingImage = false;
+}
+
+void ScreenShareServer::sendAudio(AudioShare::AudioData audio_data)
+{
+    if (clientsList.size() == 0)
+    {
+        return;
+    }
+    //    QTime time;
+    //    time.start();
+    sendingAudio = true;
+    QByteArray block;
+    QDataStream out(&block,QIODevice::WriteOnly);
+    out<<(qint8)audio_data.type;
+    out<<(quint32)audio_data.lens;
+    block.append(audio_data.data);
+    mutex.lock();
+    for (clientI = clientsList.begin(); clientI != clientsList.end(); ++clientI)
+    {
+        qint64 write_len = clientI.value()->write(block);
+        clientI.value()->flush();
+        qDebug("datalen send expect: %d, actual: %d",block.size(), write_len);
+
+    }
+    //    qDebug() << "Encode time:"  << time.elapsed();
+    mutex.unlock();
+    sendingAudio = false;
 }
 
 void ScreenShareServer::runServer(QHostAddress address, int port)

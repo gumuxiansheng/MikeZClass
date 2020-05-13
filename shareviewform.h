@@ -12,8 +12,6 @@ class ShareViewForm;
 class ShareViewForm : public QWidget
 {
     Q_OBJECT
-    QPixmap pixmap;
-    ScreenShareClient *client;
 
 public:
     explicit ShareViewForm(QWidget *parent = nullptr);
@@ -23,9 +21,13 @@ public:
 
 private:
     Ui::ShareViewForm *ui;
+    QPixmap pixmap;
+    ScreenShareClient *client;
+    AudioShare *audioShare;
 
 public slots:
     void updateView(const QPixmap &pixmap);
+    void playAudio(const QByteArray &audio_data);
 };
 
 #endif // SHAREVIEWFORM_H

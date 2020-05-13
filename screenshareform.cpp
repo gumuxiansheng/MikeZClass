@@ -12,18 +12,21 @@ ScreenShareForm::ScreenShareForm(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    startShareServer();
     startShareScreen();
+    startShareAudio();
 
 }
 
 ScreenShareForm::~ScreenShareForm()
 {
     delete ui;
+    delete screenShare;
 }
 
 void ScreenShareForm::updateUi()
 {
-    pixmap = screen->grabWindow(QApplication::desktop()->winId());//截取桌面
+    pixmap = screenShare->grabScreen(QApplication::desktop()->winId());//截取桌面
     emit screenPrepared(pixmap);
 }
 
@@ -40,17 +43,27 @@ void ScreenShareForm::paintEvent(QPaintEvent *)
     return;
 }
 
+void ScreenShareForm::startShareServer()
+{
+    worker = new ShareWorker;
+    worker->moveToThread(&workerThread);
+    connect(&workerThread, &QThread::started, worker, &ShareWorker::startShareServer); // start listening server while thread started
+    connect(&workerThread, &QThread::finished, worker, &QObject::deleteLater); // delete worker after thread is finished
+    connect(this, &ScreenShareForm::operateScreen, worker, &ShareWorker::shareScreen); // start grab screen every Interval time
+    connect(this, &ScreenShareForm::screenPrepared, worker, &ShareWorker::sendScreenImage); // when screen image prepared, use worker thread to send screen image through rpc
+    connect(worker, &ShareWorker::notifyUiChanged, this, &ScreenShareForm::updateUi); // once timer reached, update the screen image
+    connect(this, &ScreenShareForm::operateAudio, worker, &ShareWorker::shareAudio);
+    connect(this, &ScreenShareForm::closed, worker, &ShareWorker::quit);
+    workerThread.start();
+}
+
 void ScreenShareForm::startShareScreen()
 {
-    screen = QGuiApplication::primaryScreen();
+    screenShare = new ScreenShare;
+    emit operateScreen();
+}
 
-    worker = new ShareRefresher;
-    worker->moveToThread(&workerThread);
-    connect(&workerThread, &QThread::finished, worker, &QObject::deleteLater);
-    connect(this, &ScreenShareForm::operate, worker, &ShareRefresher::shareScreen); // start grab screen every Interval time
-    connect(this, &ScreenShareForm::screenPrepared, worker, &ShareRefresher::sendScreenImage); // when screen image prepared, use worker thread to send screen image through rpc
-    connect(worker, &ShareRefresher::uiChanged, this, &ScreenShareForm::updateUi); // once timer reached, update the screen image
-    connect(this, &ScreenShareForm::closed, worker, &ShareRefresher::quit);
-    workerThread.start();
-    emit operate();
+void ScreenShareForm::startShareAudio()
+{
+    emit operateAudio();
 }

@@ -21,20 +21,24 @@ SOURCES += \
     conf/configuration.cpp \
     main.cpp \
     mainwindow.cpp \
+    module/audioshare.cpp \
+    module/screenshare.cpp \
     rpc/screenshareclient.cpp \
     rpc/screenshareserver.cpp \
     screenshareform.cpp \
-    sharerefresher.cpp \
-    shareviewform.cpp
+    shareviewform.cpp \
+    shareworker.cpp
 
 HEADERS += \
     conf/configuration.h \
     mainwindow.h \
+    module/audioshare.h \
+    module/screenshare.h \
     rpc/screenshareclient.h \
     rpc/screenshareserver.h \
     screenshareform.h \
-    sharerefresher.h \
-    shareviewform.h
+    shareviewform.h \
+    shareworker.h
 
 FORMS += \
     mainwindow.ui \

@@ -6,6 +6,7 @@
 #include <QObject>
 #include <QBuffer>
 #include <QMutex>
+#include "../module/audioshare.h"
 
 class ScreenShareServer : public QObject
 {
@@ -16,18 +17,22 @@ public:
     ~ScreenShareServer();
     void runServer(QHostAddress address, int port);
     QString getHostIpAddress();
-    void sendScreenImage(QPixmap pixmap);
     void close();
+    void sendScreenImage(QPixmap pixmap);
     bool isSendingImage();
+    void sendAudio(AudioShare::AudioData audio_data);
+    bool isSendingAudio();
 
 private:
     QTcpServer *server;
     QHash<QString, QTcpSocket*> clientsList;
     QHash<QString, QTcpSocket*>::iterator clientI;
-//    QHash<QString, bool> clientWriteBlock;
+
     QMutex mutex;
     QBuffer buffer;
     bool sendingImage = false;
+    bool sendingAudio = false;
+
 
 signals:
 

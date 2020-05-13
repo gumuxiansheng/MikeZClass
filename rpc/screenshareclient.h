@@ -5,6 +5,7 @@
 #include <QObject>
 #include <QPixmap>
 #include <QMutex>
+#include "../module/audioshare.h"
 
 class ScreenShareClient : public QObject
 {
@@ -22,6 +23,7 @@ public:
 
 signals:
     void imageRead(const QPixmap &pixmap);
+    void audioRead(const QByteArray &audio_data);
 
 public slots:
     void readData();
