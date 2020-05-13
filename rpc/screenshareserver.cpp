@@ -33,7 +33,6 @@ void ScreenShareServer::newConnection()
     QTcpSocket *socket = server->nextPendingConnection();
     connect(socket, SIGNAL(readyRead()), this, SLOT(readData()));
     connect(socket, SIGNAL(disconnected()), this, SLOT(connectionclosed()));
-    socket->setReadBufferSize(0);
 
     QString msg = "connected to the server";
     socket->write(msg.toLocal8Bit().constData());
@@ -71,12 +70,12 @@ void ScreenShareServer::sendScreenImage(QPixmap pixmap)
     {
         return;
     }
-    mutex.lock();
 //    QTime time;
 //    time.start();
     sendingImage = true;
     pixmap = pixmap.scaled(pixmap.width() / 2, pixmap.height() / 2);
     pixmap.save(&buffer, "JPG");
+    mutex.lock();
     QByteArray block;
     QDataStream out(&block,QIODevice::WriteOnly);
     out<<(quint32)buffer.data().size();
@@ -88,9 +87,9 @@ void ScreenShareServer::sendScreenImage(QPixmap pixmap)
         qDebug("datalen send expect: %d, actual: %d",block.size(), write_len);
 
     }
-    buffer.close();
 //    qDebug() << "Encode time:"  << time.elapsed();
     mutex.unlock();
+    buffer.close();
     sendingImage = false;
 }
 
