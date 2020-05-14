@@ -27,6 +27,7 @@ signals:
 
 public slots:
     void readData();
+    void connectionClosed();
 
 };
 

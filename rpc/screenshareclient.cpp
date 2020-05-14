@@ -7,6 +7,7 @@ ScreenShareClient::ScreenShareClient(QObject *parent) : QObject(parent)
 {
     socket = new QTcpSocket();
     connect(socket, SIGNAL(readyRead()), this, SLOT(readData()));
+    connect(socket, SIGNAL(disconnected()), this, SLOT(connectionClosed()));
     socket->setReadBufferSize(9000000);
 //    socket->connectToHost("10.211.55.3", 8910);
     socket->connectToHost("0.0.0.0", 8910);
@@ -34,25 +35,16 @@ void ScreenShareClient::readData()
     qDebug("readData: %d", bytesLen);
 
     qint8 data_type = -1;
-    while (socket->bytesAvailable())
+    while (readLen < bytesLen)
     {
         if(data_len == 0)
         {
             QDataStream in(socket);
             in >> data_type;
             in >> len;
+            readLen += 5;
             qDebug("datatype: %d, datalen: %d", data_type, len);
-//            if (bytesLen - readLen > len + 1000)
-//            {
-//                socket->read(len - data_len);
-//                readLen += len - data_len;
-//                array.clear();
-//                array.squeeze();
-//                array.reserve(data_len);
-//                len = 0xffffffff;
-//                data_len = 0;
-//                continue;
-//            }
+
         }
         array.append(socket->read(len - data_len));
         readLen += len - data_len;
@@ -97,4 +89,9 @@ void ScreenShareClient::readData()
 
     mutex.unlock();
 
+}
+
+void ScreenShareClient::connectionClosed()
+{
+    qDebug("server connectionClosed");
 }

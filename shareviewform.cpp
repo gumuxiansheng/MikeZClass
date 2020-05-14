@@ -33,7 +33,9 @@ void ShareViewForm::playAudio(const QByteArray &audio_data)
 
 void ShareViewForm::closeEvent(QCloseEvent *)
 {
+    qDebug("closeEvent ShareViewForm");
     client->close();
+    audioShare->stop();
 }
 
 void ShareViewForm::paintEvent(QPaintEvent *)

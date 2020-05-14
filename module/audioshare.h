@@ -5,7 +5,6 @@
 #include <QAudioInput>
 #include <QAudioOutput>
 #include <QBuffer>
-#include <QFile>
 
 class AudioShare : public QObject
 {
@@ -34,8 +33,6 @@ private:
     //in
     QAudioInput *input = nullptr;
     QIODevice *inputDevice = nullptr;
-
-    QFile destinationFile;
 
 public slots:
     void onAudioReady();

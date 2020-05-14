@@ -17,12 +17,6 @@ AudioShare::AudioShare(QObject *parent) : QObject(parent)
         format = info.nearestFormat(format);
     }
 
-    output = new QAudioOutput(format,this);
-    input = new QAudioInput(format,this);
-
-    connect(output, SIGNAL(stateChanged(QAudio::State)), this, SLOT(handleOutputStateChanged(QAudio::State)));
-    connect(input, SIGNAL(stateChanged(QAudio::State)), this, SLOT(handleInputStateChanged(QAudio::State)));
-
 }
 
 AudioShare::~AudioShare()
@@ -36,12 +30,12 @@ void AudioShare::handleInputStateChanged(QAudio::State newState)
     qWarning() << "Input: " << newState;
     switch (newState) {
         case QAudio::StoppedState:
-            if (input->error() != QAudio::NoError) {
-                // Error handling
-                qWarning() << input->error();
-            } else {
-                // Finished recording
-            }
+//            if (input->error() != QAudio::NoError) {
+//                // Error handling
+//                qWarning() << input->error();
+//            } else {
+//                // Finished recording
+//            }
             break;
 
         case QAudio::ActiveState:
@@ -59,12 +53,13 @@ void AudioShare::handleOutputStateChanged(QAudio::State newState)
     qWarning() << "Output: " << newState;
     switch (newState) {
         case QAudio::StoppedState:
-            if (input->error() != QAudio::NoError) {
-                // Error handling
-                qWarning() << input->error();
-            } else {
-                // Finished recording
-            }
+//            qWarning() << input->error();
+//            if (input->error() != QAudio::NoError) {
+//                // Error handling
+//                qWarning() << input->error();
+//            } else {
+//                // Finished recording
+//            }
             break;
 
         case QAudio::ActiveState:
@@ -79,23 +74,30 @@ void AudioShare::handleOutputStateChanged(QAudio::State newState)
 
 void AudioShare::startInput()
 {
-//    destinationFile.setFileName("/tmp/test.wav");
-//    destinationFile.open( QIODevice::WriteOnly | QIODevice::Truncate );
-//    input->start(&destinationFile);
+    input = new QAudioInput(format,this);
+    connect(input, SIGNAL(stateChanged(QAudio::State)), this, SLOT(handleInputStateChanged(QAudio::State)));
 
     inputDevice = input->start();
 }
 
 void AudioShare::startOutput()
 {
+    output = new QAudioOutput(format,this);
+    connect(output, SIGNAL(stateChanged(QAudio::State)), this, SLOT(handleOutputStateChanged(QAudio::State)));
+
     outputDevice = output->start();//开始播放
 }
 
 void AudioShare::stop()
 {
-    input->stop();
-    output->stop();
-    destinationFile.close();
+    if (nullptr != input)
+    {
+        input->stop();
+    }
+    if (nullptr != output)
+    {
+        output->stop();
+    }
     if (nullptr != outputDevice && outputDevice->isOpen())
     {
         outputDevice->close();
@@ -114,21 +116,18 @@ void AudioShare::grabAudio()
 void AudioShare::playAudio(QByteArray data)
 {
     qDebug("playAudio size: %d", data.size());
-    outputDevice->write(data.constData(), data.size());
+    if (nullptr != outputDevice && outputDevice->isOpen())
+    {
+        outputDevice->write(data.constData(), data.size());
+    }
 }
 
 void AudioShare::onAudioReady()
 {
-//    int Readable = input->bytesReady();              //bytesReady()用于查看可以麦克风中可读的数据量
     AudioData audio_data;
     //读取音频
     audio_data.data = inputDevice->readAll();
     audio_data.lens = audio_data.data.size();
 
-    if (nullptr == outputDevice)
-    {
-        outputDevice = output->start();
-    }
-    outputDevice->write(audio_data.data);
     emit audioReady(audio_data);
 }
