@@ -9,8 +9,8 @@ ScreenShareClient::ScreenShareClient(QObject *parent) : QObject(parent)
     connect(socket, SIGNAL(readyRead()), this, SLOT(readData()));
     connect(socket, SIGNAL(disconnected()), this, SLOT(connectionClosed()));
     socket->setReadBufferSize(9000000);
-//    socket->connectToHost("10.211.55.3", 8910);
-    socket->connectToHost("0.0.0.0", 8910);
+    socket->connectToHost("10.211.55.3", 8910);
+//    socket->connectToHost("0.0.0.0", 8910);
     socket->connected();
 }
 
@@ -34,7 +34,6 @@ void ScreenShareClient::readData()
     quint32 readLen = 0;
     qDebug("readData: %d", bytesLen);
 
-    qint8 data_type = -1;
     while (readLen < bytesLen)
     {
         if(data_len == 0)
@@ -43,12 +42,13 @@ void ScreenShareClient::readData()
             in >> data_type;
             in >> len;
             readLen += 5;
-            qDebug("datatype: %d, datalen: %d", data_type, len);
-
         }
-        array.append(socket->read(len - data_len));
-        readLen += len - data_len;
+
+        QByteArray readTemp = socket->read(len - data_len);
+        array.append(readTemp);
+        readLen += readTemp.size();
         data_len = array.size();
+        qDebug("len: %d; data_len: %d; readLen: %d; bytesLen: %d", len, data_len, readLen, bytesLen);
 
         if (data_len == len)
         {

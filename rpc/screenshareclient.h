@@ -11,6 +11,7 @@ class ScreenShareClient : public QObject
 {
     Q_OBJECT
     QTcpSocket *socket;
+    qint8 data_type = -1;
     quint32 data_len = 0;
     quint32 len = 0xffffffff;
     QByteArray array;
