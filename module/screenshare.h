@@ -5,6 +5,7 @@
 #include <QScreen>
 #include <QPixmap>
 #include <QApplication>
+#include <QThread>
 
 class ScreenShare : public QObject
 {
@@ -12,9 +13,11 @@ class ScreenShare : public QObject
 public:
     static ScreenShare * GetInstance()
     {
-        if(m_pInstance == NULL)  //判断是否第一次调用
+        if(m_pInstance == NULL)
+        {
             m_pInstance = new ScreenShare();
-        return m_pInstance;
+        }
+        return NewInstance(m_pInstance);
     }
     QPixmap grabScreen(WId window);
 
@@ -23,6 +26,14 @@ signals:
 private:
     explicit ScreenShare(QObject *parent = nullptr);
     static ScreenShare *m_pInstance;
+    static ScreenShare * NewInstance(ScreenShare * screenShare)
+    {
+        QScreen * screen = screenShare->screen;
+        m_pInstance = new ScreenShare();
+        m_pInstance->screen = screen;
+        return m_pInstance;
+    }
+
     QScreen *screen;
 
 };

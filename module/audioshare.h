@@ -5,6 +5,7 @@
 #include <QAudioInput>
 #include <QAudioOutput>
 #include <QBuffer>
+#include <QThread>
 
 class AudioShare : public QObject
 {
@@ -12,9 +13,12 @@ class AudioShare : public QObject
 public:
     static AudioShare * GetInstance()
     {
-        if(m_pInstance == NULL)  //判断是否第一次调用
+        // this instance should be only used in main thread
+        if(m_pInstance == NULL)
+        {
             m_pInstance = new AudioShare();
-        return m_pInstance;
+        }
+        return NewInstance(m_pInstance);
     }
     ~AudioShare();
     void grabAudio();
@@ -35,6 +39,31 @@ public:
 private:
     explicit AudioShare(QObject *parent = nullptr);
     static AudioShare *m_pInstance;
+    static AudioShare * NewInstance(AudioShare * audioShare)
+    {
+        QAudioFormat format = audioShare->format;
+
+        QAudioDeviceInfo selectedInputDevice = audioShare->selectedInputDevice;
+        QAudioDeviceInfo selectedOutputDevice = audioShare->selectedOutputDevice;
+
+        //out
+        QAudioOutput *output = audioShare->output;
+        QIODevice *outputDevice = audioShare->outputDevice;
+
+        //in
+        QAudioInput *input = audioShare->input;
+        QIODevice *inputDevice = audioShare->inputDevice;
+
+        m_pInstance = new AudioShare();
+        m_pInstance->format = format;
+        m_pInstance->input = input;
+        m_pInstance->output = output;
+        m_pInstance->inputDevice = inputDevice;
+        m_pInstance->outputDevice = outputDevice;
+        m_pInstance->selectedInputDevice = selectedInputDevice;
+        m_pInstance->selectedOutputDevice = selectedOutputDevice;
+        return m_pInstance;
+    }
 
     QAudioFormat format;
 

@@ -72,7 +72,7 @@ void ScreenShareForm::startShareAudio()
                                          tr("Your audio device:"), audioShare->getInputDevices(), 0, false, &ok);
     if (ok && !item.isEmpty())
     {
-
+        audioShare->selectInputDevice(item);
     }
     emit operateAudio();
 }
