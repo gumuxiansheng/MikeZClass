@@ -5,6 +5,7 @@
 #include <QMessageBox>
 #include <QThread>
 #include <QPainter>
+#include <QInputDialog>
 
 ScreenShareForm::ScreenShareForm(QWidget *parent) :
     QWidget(parent),
@@ -59,11 +60,19 @@ void ScreenShareForm::startShareServer()
 
 void ScreenShareForm::startShareScreen()
 {
-    screenShare = new ScreenShare;
+    screenShare = ScreenShare::GetInstance();
     emit operateScreen();
 }
 
 void ScreenShareForm::startShareAudio()
 {
+    audioShare = AudioShare::GetInstance();
+    bool ok;
+    QString item = QInputDialog::getItem(this, tr("Select Audio Device"),
+                                         tr("Your audio device:"), audioShare->getInputDevices(), 0, false, &ok);
+    if (ok && !item.isEmpty())
+    {
+
+    }
     emit operateAudio();
 }

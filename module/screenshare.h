@@ -10,12 +10,19 @@ class ScreenShare : public QObject
 {
     Q_OBJECT
 public:
-    explicit ScreenShare(QObject *parent = nullptr);
+    static ScreenShare * GetInstance()
+    {
+        if(m_pInstance == NULL)  //判断是否第一次调用
+            m_pInstance = new ScreenShare();
+        return m_pInstance;
+    }
     QPixmap grabScreen(WId window);
 
 signals:
 
 private:
+    explicit ScreenShare(QObject *parent = nullptr);
+    static ScreenShare *m_pInstance;
     QScreen *screen;
 
 };

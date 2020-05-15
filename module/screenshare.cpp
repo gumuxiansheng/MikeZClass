@@ -1,5 +1,7 @@
 #include "screenshare.h"
 
+ScreenShare* ScreenShare::m_pInstance = NULL;
+
 ScreenShare::ScreenShare(QObject *parent) : QObject(parent)
 {
     screen = QGuiApplication::primaryScreen();

@@ -8,7 +8,7 @@ ShareViewForm::ShareViewForm(QWidget *parent) :
 {
     ui->setupUi(this);
     client = new ScreenShareClient;
-    audioShare = new AudioShare;
+    audioShare = AudioShare::GetInstance();
     audioShare->startOutput();
 
     connect(client, &ScreenShareClient::imageRead, this, &ShareViewForm::updateView);

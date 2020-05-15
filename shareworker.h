@@ -56,7 +56,7 @@ public slots:
     }
     void shareAudio()
     {
-        audioShare = new AudioShare;
+        audioShare = AudioShare::GetInstance();
         audioShare->startInput();
         audioShare->grabAudio();
         connect(audioShare, &AudioShare::audioReady, this, &ShareWorker::sendAudio);

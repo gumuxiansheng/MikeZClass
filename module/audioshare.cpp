@@ -1,6 +1,8 @@
 #include "audioshare.h"
 #include <QDebug>
 
+AudioShare* AudioShare::m_pInstance = NULL;
+
 AudioShare::AudioShare(QObject *parent) : QObject(parent)
 {
     format.setSampleRate(8000);
@@ -9,13 +11,6 @@ AudioShare::AudioShare(QObject *parent) : QObject(parent)
     format.setCodec("audio/pcm");
     format.setSampleType(QAudioFormat::UnSignedInt);
     format.setByteOrder(QAudioFormat::LittleEndian);
-
-    QAudioDeviceInfo info = QAudioDeviceInfo::defaultInputDevice();
-    if(!info.isFormatSupported(format))
-    {
-        qWarning() << "Default format not supported, trying to use the nearest.";
-        format = info.nearestFormat(format);
-    }
 
 }
 
@@ -29,22 +24,16 @@ void AudioShare::handleInputStateChanged(QAudio::State newState)
 {
     qWarning() << "Input: " << newState;
     switch (newState) {
-        case QAudio::StoppedState:
-//            if (input->error() != QAudio::NoError) {
-//                // Error handling
-//                qWarning() << input->error();
-//            } else {
-//                // Finished recording
-//            }
-            break;
+    case QAudio::StoppedState:
+        break;
 
-        case QAudio::ActiveState:
-            // Started recording - read from IO device
-            break;
+    case QAudio::ActiveState:
+        // Started recording - read from IO device
+        break;
 
-        default:
-            // ... other cases as appropriate
-            break;
+    default:
+        // ... other cases as appropriate
+        break;
     }
 }
 
@@ -52,28 +41,125 @@ void AudioShare::handleOutputStateChanged(QAudio::State newState)
 {
     qWarning() << "Output: " << newState;
     switch (newState) {
-        case QAudio::StoppedState:
-//            qWarning() << input->error();
-//            if (input->error() != QAudio::NoError) {
-//                // Error handling
-//                qWarning() << input->error();
-//            } else {
-//                // Finished recording
-//            }
-            break;
+    case QAudio::StoppedState:
+        break;
 
-        case QAudio::ActiveState:
-            // Started recording - read from IO device
-            break;
+    case QAudio::ActiveState:
+        // Started recording - read from IO device
+        break;
 
-        default:
-            // ... other cases as appropriate
-            break;
+    default:
+        // ... other cases as appropriate
+        break;
     }
+}
+
+QStringList AudioShare::getInputDevices()
+{
+    QStringList aDeviceListI;
+    QList<QAudioDeviceInfo> audioDeviceListI = QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
+    foreach (QAudioDeviceInfo devInfo, audioDeviceListI)
+    {
+        QString strName = devInfo.deviceName();
+        if (devInfo.isNull())
+        {
+            continue;
+        }
+        if (strName[0] == 65533)
+        {
+            continue;
+        }
+        bool bFound = false;
+        foreach (QString dev, aDeviceListI)
+        {
+            if (strName == dev)
+            {
+                bFound = true;
+            }
+        }
+        if (bFound == true)
+        {
+            continue;
+        }
+        aDeviceListI.push_back(strName);
+    }
+
+    return aDeviceListI;
+}
+
+void AudioShare::selectInputDevice(QString deviceName)
+{
+    QList<QAudioDeviceInfo> audioDeviceListI = QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
+    foreach (QAudioDeviceInfo devInfo, audioDeviceListI)
+    {
+        QString strName = devInfo.deviceName();
+        if (deviceName == strName)
+        {
+            selectedInputDevice = devInfo;
+            return;
+        }
+    }
+}
+
+void AudioShare::selectOutputDevice(QString deviceName)
+{
+    QList<QAudioDeviceInfo> audioDeviceListO = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
+    foreach (QAudioDeviceInfo devInfo, audioDeviceListO)
+    {
+        QString strName = devInfo.deviceName();
+        if (deviceName == strName)
+        {
+            selectedOutputDevice = devInfo;
+            return;
+        }
+    }
+}
+
+QStringList AudioShare::getOutputDevices()
+{
+    //获取输出音频设备名称
+    QStringList aDeviceListO;
+    QList<QAudioDeviceInfo> audioDeviceListO = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
+    foreach (QAudioDeviceInfo devInfo, audioDeviceListO)
+    {
+        QString strName = devInfo.deviceName();
+        if (devInfo.isNull())
+        {
+            continue;
+        }
+        if (strName[0] == 65533)
+        {
+            continue;
+        }
+        bool bFound = false;
+        foreach (QString dev, aDeviceListO)
+        {
+            if (strName == dev)
+            {
+                bFound = true;
+            }
+        }
+        if (bFound == true)
+        {
+            continue;
+        }
+        aDeviceListO.push_back(strName);
+    }
+    return  aDeviceListO;
 }
 
 void AudioShare::startInput()
 {
+    if (selectedInputDevice.isNull())
+    {
+        selectedInputDevice = QAudioDeviceInfo::defaultInputDevice();
+    }
+    if(!selectedInputDevice.isFormatSupported(format))
+    {
+        qWarning() << "Default format not supported, trying to use the nearest.";
+        format = selectedInputDevice.nearestFormat(format);
+    }
+
     input = new QAudioInput(format,this);
     connect(input, SIGNAL(stateChanged(QAudio::State)), this, SLOT(handleInputStateChanged(QAudio::State)));
 
@@ -82,6 +168,16 @@ void AudioShare::startInput()
 
 void AudioShare::startOutput()
 {
+    if (selectedOutputDevice.isNull())
+    {
+        selectedOutputDevice = QAudioDeviceInfo::defaultOutputDevice();
+    }
+    if(!selectedOutputDevice.isFormatSupported(format))
+    {
+        qWarning() << "Default format not supported, trying to use the nearest.";
+        format = selectedOutputDevice.nearestFormat(format);
+    }
+
     output = new QAudioOutput(format,this);
     connect(output, SIGNAL(stateChanged(QAudio::State)), this, SLOT(handleOutputStateChanged(QAudio::State)));
 

@@ -16,6 +16,7 @@ class ScreenShareForm : public QWidget
     Q_OBJECT
     QThread workerThread;
     ScreenShare *screenShare;
+    AudioShare *audioShare;
     QPixmap pixmap;
 
 public:
